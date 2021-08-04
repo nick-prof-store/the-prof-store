@@ -1,6 +1,20 @@
 'use strict'
 
-const {db, models: {User} } = require('../server/db')
+const {db, models: {User, Image} } = require('../server/db')
+
+const path = require('path');
+const load = (name)=> {
+  return new Promise((res, rej)=> {
+    require('fs').readFile(path.join(__dirname, name), 'base64' ,(err, result)=> {
+      if(err){
+        rej(err);
+      }
+      else {
+        res(`data:image/png;base64,${result}`);
+      }
+    });
+  });
+};
 
 /**
  * seed - this function clears the database, updates tables to
@@ -14,6 +28,8 @@ async function seed() {
   const users = await Promise.all([
     User.create({ username: 'cody', password: '123' }),
     User.create({ username: 'murphy', password: '123' }),
+    Image.create({ data: await load('../circle.png')}),
+    Image.create({ data: await load('../square.png')}),
   ])
 
   console.log(`seeded ${users.length} users`)

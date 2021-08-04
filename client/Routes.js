@@ -4,6 +4,53 @@ import {withRouter, Route, Switch, Redirect} from 'react-router-dom'
 import { Login, Signup } from './components/AuthForm';
 import Home from './components/Home';
 import {me} from './store'
+const { useState, useEffect } = React;
+import axios from 'axios';
+const Images = ()=> {
+
+  const upload = ()=> {
+    axios.post('/api/images', { data })
+  };
+  const [images, setImages] = useState([]);
+  const [el, setEl] = useState(null);
+  const [data, setData] = useState('');
+  useEffect(()=> {
+    axios.get('/api/images')
+      .then( response => setImages(response.data));
+  }, []);
+
+  useEffect(()=> {
+    if(el){
+      el.addEventListener('change', (e)=> {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.addEventListener('load', ()=> {
+          setData(reader.result);
+        });
+        reader.readAsDataURL(file);
+      });
+    }
+  }, [el]);
+  return (
+    <div>
+      <h1>Images</h1>
+        <input type='file' ref={ el => setEl(el)} />
+        { data }
+        <button disabled={ !data } onClick={ upload }>Upload</button>
+      <ul>
+        {
+          images.map( image => {
+            return (
+              <li key={image.id}>
+                <img src={ image.data } />
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  );
+}; 
 
 /**
  * COMPONENT
@@ -21,6 +68,7 @@ class Routes extends Component {
         {isLoggedIn ? (
           <Switch>
             <Route path="/home" component={Home} />
+            <Route path="/images" component={Images} />
             <Redirect to="/home" />
           </Switch>
         ) : (
@@ -28,6 +76,7 @@ class Routes extends Component {
             <Route path='/' exact component={ Login } />
             <Route path="/login" component={Login} />
             <Route path="/signup" component={Signup} />
+            <Route path="/images" component={Images} />
           </Switch>
         )}
       </div>
